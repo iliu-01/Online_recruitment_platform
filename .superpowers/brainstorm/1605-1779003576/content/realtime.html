@@ -1,0 +1,127 @@
+<h2>实时通信架构 — Socket.IO</h2>
+<p class="subtitle">聊天 + 通知推送，共用一条 WebSocket 连接</p>
+
+<div class="mockup">
+  <div class="mockup-header">连接与消息流</div>
+  <div class="mockup-body">
+    <div style="font-family:monospace;font-size:12px;line-height:1.8;">
+
+      <div style="display:flex;gap:16px;">
+
+        <!-- 左侧：连接流程 -->
+        <div style="flex:1;">
+          <h4 style="margin:0 0 12px;">🔌 连接建立</h4>
+
+          <div style="background:#e3f2fd;border-radius:6px;padding:12px;">
+            <div style="margin-bottom:8px;">
+              <strong>1. 用户登录</strong> → 前端获得 JWT token
+            </div>
+            <div style="text-align:center;color:#999;">▼</div>
+            <div style="margin-bottom:8px;">
+              <strong>2. 建立 WebSocket</strong> → Socket.IO 连接，携带 token
+            </div>
+            <div style="text-align:center;color:#999;">▼</div>
+            <div style="margin-bottom:8px;">
+              <strong>3. 服务端验证</strong> → 解析 JWT，将 socket 与 userId 绑定
+            </div>
+            <div style="text-align:center;color:#999;">▼</div>
+            <div style="margin-bottom:8px;">
+              <strong>4. 加入个人房间</strong> → socket.join(`user:${userId}`)
+            </div>
+            <div style="text-align:center;color:#999;">▼</div>
+            <div>
+              <strong>5. 就绪</strong> → 可收发消息、接收通知
+            </div>
+          </div>
+        </div>
+
+        <!-- 右侧：聊天流程 -->
+        <div style="flex:1;">
+          <h4 style="margin:0 0 12px;">💬 聊天消息流</h4>
+
+          <div style="background:#e0f7fa;border-radius:6px;padding:12px;">
+            <div style="margin-bottom:4px;">
+              <strong>A 发送消息:</strong>
+            </div>
+            <div style="margin-left:12px;margin-bottom:8px;font-size:11px;">
+              emit('send_message', { conversationId, content, receiverId })
+            </div>
+            <div style="text-align:center;color:#999;">▼</div>
+            <div style="margin-bottom:4px;">
+              <strong>服务端处理:</strong>
+            </div>
+            <div style="margin-left:12px;margin-bottom:8px;font-size:11px;">
+              ① 存入 messages 表<br>
+              ② 发送给 B: io.to(`user:${receiverId}`).emit('new_message', msg)
+            </div>
+            <div style="text-align:center;color:#999;">▼</div>
+            <div>
+              <strong>B 客户端:</strong> 收到 new_message 事件，更新聊天界面
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- 通知流 -->
+      <div style="margin-top:20px;">
+        <h4 style="margin:0 0 12px;">🔔 通知推送流</h4>
+        <div style="background:#efebe9;border-radius:6px;padding:12px;display:flex;gap:16px;align-items:center;flex-wrap:wrap;">
+
+          <div style="background:#fff;border:1px solid #ddd;padding:8px 12px;border-radius:4px;text-align:center;">
+            <div style="font-size:11px;color:#888;">触发动作</div>
+            <div style="margin-top:4px;">投递成功 / 状态变更 / 新消息</div>
+          </div>
+          <div style="font-size:20px;">→</div>
+          <div style="background:#fff;border:1px solid #ddd;padding:8px 12px;border-radius:4px;text-align:center;">
+            <div style="font-size:11px;color:#888;">服务端</div>
+            <div style="margin-top:4px;">① 写入 notifications 表<br>② io.to() 推送到目标用户</div>
+          </div>
+          <div style="font-size:20px;">→</div>
+          <div style="background:#fff;border:1px solid #ddd;padding:8px 12px;border-radius:4px;text-align:center;">
+            <div style="font-size:11px;color:#888;">客户端</div>
+            <div style="margin-top:4px;">顶部通知铃铛 🔴红点</div>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>前端状态管理设计</h3>
+  <div class="mockup">
+    <div class="mockup-header">Pinia Store 划分</div>
+    <div class="mockup-body">
+      <table style="width:100%;border-collapse:collapse;font-size:13px;">
+        <tr style="background:#f5f5f5;">
+          <th style="padding:8px;text-align:left;border-bottom:1px solid #ddd;">Store</th>
+          <th style="padding:8px;text-align:left;border-bottom:1px solid #ddd;">职责</th>
+          <th style="padding:8px;text-align:left;border-bottom:1px solid #ddd;">关键状态</th>
+        </tr>
+        <tr>
+          <td style="padding:8px;border-bottom:1px solid #eee;"><strong>useAuthStore</strong></td>
+          <td style="padding:8px;border-bottom:1px solid #eee;">认证与用户信息</td>
+          <td style="padding:8px;border-bottom:1px solid #eee;">token, user, role, isLoggedIn</td>
+        </tr>
+        <tr>
+          <td style="padding:8px;border-bottom:1px solid #eee;"><strong>useChatStore</strong></td>
+          <td style="padding:8px;border-bottom:1px solid #eee;">实时聊天</td>
+          <td style="padding:8px;border-bottom:1px solid #eee;">conversations[], activeChat, messages{}, unreadCount</td>
+        </tr>
+        <tr>
+          <td style="padding:8px;border-bottom:1px solid #eee;"><strong>useNotificationStore</strong></td>
+          <td style="padding:8px;border-bottom:1px solid #eee;">通知管理</td>
+          <td style="padding:8px;border-bottom:1px solid #eee;">notifications[], unreadCount, wsConnected</td>
+        </tr>
+        <tr>
+          <td style="padding:8px;"><strong>useApplicationStore</strong></td>
+          <td style="padding:8px;">投递管理（求职者+公司方）</td>
+          <td style="padding:8px;">applications[], statusFilter, stats</td>
+        </tr>
+      </table>
+    </div>
+  </div>
+</div>

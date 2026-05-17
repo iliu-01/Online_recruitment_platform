@@ -1,0 +1,114 @@
+<h2>前端路由与页面结构</h2>
+<p class="subtitle">Vue Router 路由设计，按求职者/公司方两套布局</p>
+
+<div class="split">
+  <!-- 求职者 -->
+  <div class="mockup">
+    <div class="mockup-header">🧑 求职者端 (9 页面)</div>
+    <div class="mockup-body">
+      <div style="font-family:monospace;font-size:12px;line-height:2;">
+
+        <div style="background:#e3f2fd;padding:6px 10px;border-radius:4px;margin-bottom:8px;">
+          <strong>公共路由</strong>
+        </div>
+        <div>/login — 登录</div>
+        <div>/register — 注册（含角色选择）</div>
+
+        <div style="background:#fff3e0;padding:6px 10px;border-radius:4px;margin:12px 0 8px;">
+          <strong>/seeker/* 布局：侧边栏 + 顶栏 + 内容</strong>
+        </div>
+        <div>/seeker/dashboard — 首页概览</div>
+        <div>/seeker/resume — 编辑在线简历</div>
+        <div>/seeker/resume/attachments — 管理附件简历</div>
+        <div>/seeker/jobs — 职位搜索列表</div>
+        <div>/seeker/jobs/:id — 职位详情</div>
+        <div>/seeker/applications — 我的投递（状态筛选标签）</div>
+        <div>/seeker/messages — 会话列表</div>
+        <div>/seeker/messages/:id — 聊天窗口</div>
+        <div>/seeker/notifications — 通知列表</div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- 公司方 -->
+  <div class="mockup">
+    <div class="mockup-header">🏢 公司端 (8 页面)</div>
+    <div class="mockup-body">
+      <div style="font-family:monospace;font-size:12px;line-height:2;">
+
+        <div style="background:#e3f2fd;padding:6px 10px;border-radius:4px;margin-bottom:8px;">
+          <strong>公共路由（共用）</strong>
+        </div>
+        <div>/login — 登录</div>
+        <div>/register — 注册（含角色选择）</div>
+
+        <div style="background:#e8f5e9;padding:6px 10px;border-radius:4px;margin:12px 0 8px;">
+          <strong>/company/* 布局：侧边栏 + 顶栏 + 内容</strong>
+        </div>
+        <div>/company/dashboard — 首页概览</div>
+        <div>/company/jobs — 我发布的职位列表</div>
+        <div>/company/jobs/create — 发布新职位</div>
+        <div>/company/jobs/:id/edit — 编辑职位</div>
+        <div>/company/jobs/:id/applications — 该职位收到的投递</div>
+        <div>/company/applications/:id — 投递详情（查看简历）</div>
+        <div>/company/messages — 会话列表</div>
+        <div>/company/messages/:id — 聊天窗口</div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h2>核心组件树</h2>
+</div>
+
+<div class="mockup">
+  <div class="mockup-header">组件复用策略</div>
+  <div class="mockup-body">
+    <div style="font-family:monospace;font-size:12px;line-height:1.7;">
+
+      <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:12px;">
+        <span style="background:#409eff;color:#fff;padding:4px 10px;border-radius:4px;">共用组件</span>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;">
+        <span class="mock-button" style="display:inline-block;">ChatWindow</span>
+        <span class="mock-button" style="display:inline-block;">NotificationBell</span>
+        <span class="mock-button" style="display:inline-block;">StatusTag</span>
+        <span class="mock-button" style="display:inline-block;">JobCard</span>
+        <span class="mock-button" style="display:inline-block;">ResumePreview</span>
+        <span class="mock-button" style="display:inline-block;">FileUploader</span>
+      </div>
+
+      <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:12px;">
+        <span style="background:#ff9800;color:#fff;padding:4px 10px;border-radius:4px;">求职者专用</span>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;">
+        <span class="mock-button" style="display:inline-block;">ResumeForm</span>
+        <span class="mock-button" style="display:inline-block;">ApplicationStatusList</span>
+        <span class="mock-button" style="display:inline-block;">JobSearchFilters</span>
+      </div>
+
+      <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:12px;">
+        <span style="background:#4caf50;color:#fff;padding:4px 10px;border-radius:4px;">公司方专用</span>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <span class="mock-button" style="display:inline-block;">JobForm</span>
+        <span class="mock-button" style="display:inline-block;">ApplicationList</span>
+        <span class="mock-button" style="display:inline-block;">ResumeViewer</span>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>设计要点</h3>
+  <ul>
+    <li><strong>两套布局</strong> — 求职者端橙色调 / 公司端绿色调，同样的 ChatWindow、NotificationBell 跨角色复用</li>
+    <li><strong>投递状态标签</strong> — StatusTag 组件统一渲染六种状态（有对应颜色和图标）</li>
+    <li><strong>聊天窗口</strong> — ChatWindow 在双方完全一致，通过 Socket.IO 实时收发</li>
+    <li><strong>职位卡片</strong> — JobCard 在职位列表和搜索结果中复用</li>
+  </ul>
+</div>
