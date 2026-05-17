@@ -13,8 +13,8 @@ app.use(express.json());
 
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/resume', require('./routes/resume'));
-
-// Routes will be mounted by later tasks
+app.use('/api/jobs', require('./routes/jobs'));
+app.use('/api/applications', require('./routes/applications'));
 
 app.use((err, req, res, next) => {
   console.error(err.stack);
