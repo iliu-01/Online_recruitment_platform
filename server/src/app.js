@@ -3,6 +3,7 @@ const cors = require('cors');
 const morgan = require('morgan');
 const http = require('http');
 const { port } = require('./config');
+const { initSocket } = require('./socket');
 
 const app = express();
 const server = http.createServer(app);
@@ -15,6 +16,8 @@ app.use('/api/auth', require('./routes/auth'));
 app.use('/api/resume', require('./routes/resume'));
 app.use('/api/jobs', require('./routes/jobs'));
 app.use('/api/applications', require('./routes/applications'));
+app.use('/api/conversations', require('./routes/conversations'));
+app.use('/api/notifications', require('./routes/notifications'));
 
 app.use((err, req, res, next) => {
   console.error(err.stack);
@@ -23,7 +26,8 @@ app.use((err, req, res, next) => {
   });
 });
 
-// Socket.IO will be initialized in a later task. For now, server starts without it.
+initSocket(server);
+
 server.listen(port, () => {
   console.log(`Server running on http://localhost:${port}`);
 });
