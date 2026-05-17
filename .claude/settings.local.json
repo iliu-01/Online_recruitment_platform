@@ -15,7 +15,9 @@
       "Bash(echo \"exit: $?\")",
       "Bash(node -e \"const pkg = require\\('./server/package.json'\\); console.log\\('Dep count:', Object.keys\\(pkg.dependencies\\).length, 'DevDep count:', Object.keys\\(pkg.devDependencies\\).length\\); const deps = {...pkg.dependencies, ...pkg.devDependencies}; for\\(const [k,v] of Object.entries\\(deps\\)\\) console.log\\(k, v\\)\")",
       "Bash(git rm *)",
-      "Bash(timeout 10 npx vite --host)"
+      "Bash(timeout 10 npx vite --host)",
+      "Bash(psql --version)",
+      "Bash(psql -U postgres -c \"SELECT 1\")"
     ]
   }
 }

@@ -11,6 +11,8 @@ app.use(cors());
 app.use(morgan('dev'));
 app.use(express.json());
 
+app.use('/api/auth', require('./routes/auth'));
+
 // Routes will be mounted by later tasks
 
 app.use((err, req, res, next) => {
