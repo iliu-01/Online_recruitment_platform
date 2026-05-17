@@ -12,6 +12,7 @@ app.use(morgan('dev'));
 app.use(express.json());
 
 app.use('/api/auth', require('./routes/auth'));
+app.use('/api/resume', require('./routes/resume'));
 
 // Routes will be mounted by later tasks
 

@@ -17,7 +17,8 @@
       "Bash(git rm *)",
       "Bash(timeout 10 npx vite --host)",
       "Bash(psql --version)",
-      "Bash(psql -U postgres -c \"SELECT 1\")"
+      "Bash(psql -U postgres -c \"SELECT 1\")",
+      "Bash(git *)"
     ]
   }
 }
