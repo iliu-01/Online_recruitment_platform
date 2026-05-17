@@ -9,6 +9,7 @@ export const useAuthStore = defineStore('auth', {
   getters: {
     isLoggedIn: (state) => !!state.token,
     role: (state) => state.user?.role || '',
+    pathPrefix: (state) => state.user?.role === 'job_seeker' ? 'seeker' : 'company',
     userId: (state) => state.user?.id || null,
   },
   actions: {

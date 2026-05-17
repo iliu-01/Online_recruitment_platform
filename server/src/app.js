@@ -26,7 +26,10 @@ app.use((err, req, res, next) => {
   });
 });
 
-initSocket(server);
+const { io } = initSocket(server);
+
+// 挂载 io 供 services 使用
+app.set('io', io);
 
 server.listen(port, () => {
   console.log(`Server running on http://localhost:${port}`);

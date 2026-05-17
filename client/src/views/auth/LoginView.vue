@@ -51,7 +51,7 @@ async function handleLogin() {
     await authStore.login(form.email, form.password);
     connect();
     ElMessage.success('登录成功');
-    router.push(`/${authStore.role}/dashboard`);
+    router.push(`/${authStore.pathPrefix}/dashboard`);
   } catch (err) {
     ElMessage.error(err.response?.data?.error || '登录失败');
   } finally { loading.value = false; }

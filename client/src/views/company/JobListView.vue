@@ -10,9 +10,11 @@
       <el-table-column label="薪资范围" width="140">
         <template #default="{ row }">{{ formatSalary(row.salary_min) }} - {{ formatSalary(row.salary_max) }}</template>
       </el-table-column>
-      <el-table-column label="状态" width="100">
+      <el-table-column label="状态" width="120">
         <template #default="{ row }">
-          <StatusTag :status="row.status === 'open' ? 'delivered' : 'rejected'" />
+          <el-tag :type="row.status === 'open' ? 'success' : 'info'" size="small">
+            {{ row.status === 'open' ? '🔓 招聘中' : '🔒 已关闭' }}
+          </el-tag>
         </template>
       </el-table-column>
       <el-table-column label="发布时间" width="120">
@@ -33,7 +35,6 @@
 import { ref, onMounted } from 'vue';
 import { jobsApi } from '@/api/auth';
 import { ElMessage, ElMessageBox } from 'element-plus';
-import StatusTag from '@/components/common/StatusTag.vue';
 
 const jobs = ref([]);
 const loading = ref(false);

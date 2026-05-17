@@ -66,7 +66,7 @@ async function handleRegister() {
     await authStore.register(form.email, form.password, form.role);
     connect();
     ElMessage.success('注册成功');
-    router.push(`/${authStore.role}/dashboard`);
+    router.push(`/${authStore.pathPrefix}/dashboard`);
   } catch (err) {
     ElMessage.error(err.response?.data?.error || '注册失败');
   } finally { loading.value = false; }

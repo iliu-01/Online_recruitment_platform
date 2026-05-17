@@ -4,10 +4,17 @@ const conversationService = require('../services/conversations');
 const notificationService = require('../services/notifications');
 const Message = require('../models/message');
 
+let _io = null;
+
+function getIO() {
+  return _io;
+}
+
 function initSocket(server) {
   const io = require('socket.io')(server, {
     cors: { origin: '*', methods: ['GET', 'POST'] },
   });
+  _io = io;
 
   const onlineUsers = new Map();
 
@@ -79,4 +86,4 @@ function initSocket(server) {
   return { io, onlineUsers };
 }
 
-module.exports = { initSocket };
+module.exports = { initSocket, getIO };

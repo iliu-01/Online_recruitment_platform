@@ -12,9 +12,6 @@
         <el-menu-item index="/company/jobs">
           <el-icon><Briefcase /></el-icon><span>职位管理</span>
         </el-menu-item>
-        <el-menu-item index="/company/applications">
-          <el-icon><Document /></el-icon><span>简历收件箱</span>
-        </el-menu-item>
         <el-menu-item index="/company/messages">
           <el-icon><ChatDotRound /></el-icon><span>消息</span>
           <el-badge v-if="chatStore.unreadCount" :value="chatStore.unreadCount" class="badge" />

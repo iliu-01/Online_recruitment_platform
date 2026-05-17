@@ -1,10 +1,9 @@
 import { createRouter, createWebHistory } from 'vue-router';
-import { useAuthStore } from '@/stores/auth';
 
 const routes = [
   { path: '/', redirect: '/login' },
-  { path: '/login', name: 'Login', component: () => import('@/views/auth/LoginView.vue'), meta: { guest: true } },
-  { path: '/register', name: 'Register', component: () => import('@/views/auth/RegisterView.vue'), meta: { guest: true } },
+  { path: '/login', name: 'Login', component: () => import('@/views/auth/LoginView.vue') },
+  { path: '/register', name: 'Register', component: () => import('@/views/auth/RegisterView.vue') },
   {
     path: '/seeker',
     component: () => import('@/layouts/SeekerLayout.vue'),
@@ -42,16 +41,27 @@ const router = createRouter({
   routes,
 });
 
+function roleToPath(r) {
+  return r === 'job_seeker' ? 'seeker' : 'company';
+}
+
 router.beforeEach((to, from, next) => {
-  const authStore = useAuthStore();
+  const token = localStorage.getItem('token');
+  let role = '';
+  if (token) {
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      role = payload.role || '';
+    } catch { localStorage.removeItem('token'); }
+  }
 
   if (to.path === '/login' || to.path === '/register') {
-    if (authStore.isLoggedIn) return next(`/${authStore.role}`);
+    if (role) return next(`/${roleToPath(role)}/dashboard`);
     return next();
   }
 
-  if (!authStore.isLoggedIn) return next('/login');
-  if (to.meta.role && to.meta.role !== authStore.role) return next(`/${authStore.role}/dashboard`);
+  if (!role) return next('/login');
+  if (to.meta.role && to.meta.role !== role) return next(`/${roleToPath(role)}/dashboard`);
   next();
 });
 

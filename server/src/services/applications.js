@@ -1,5 +1,15 @@
 const Application = require('../models/application');
 const Job = require('../models/job');
+const notificationService = require('./notifications');
+const { getIO } = require('../socket');
+
+const STATUS_LABELS = {
+  delivered: '已投递',
+  interviewing: '面试中',
+  offered: '已发Offer',
+  accepted: '已接受',
+  rejected: '已拒绝',
+};
 
 class ApplicationService {
   async apply(jobSeekerUserId, { job_id, resume_id, cover_letter, status }) {
@@ -13,6 +23,22 @@ class ApplicationService {
       cover_letter: cover_letter || '',
       status: status || 'delivered',
     });
+
+    // 通知公司方：收到新投递
+    try {
+      const notif = await notificationService.create(
+        job.company_user_id,
+        'new_application',
+        '收到新投递',
+        `有求职者投递了职位「${job.title}」`,
+        app.id
+      );
+      const io = getIO();
+      if (io) io.to(`user:${job.company_user_id}`).emit('notification', {
+        id: notif.id, type: notif.type, title: notif.title, content: notif.content, createdAt: notif.created_at,
+      });
+    } catch (e) { console.error('通知发送失败:', e.message); }
+
     return app;
   }
 
@@ -46,7 +72,25 @@ class ApplicationService {
       throw Object.assign(new Error(`不能从 ${app.status} 变更到 ${newStatus}`), { status: 400 });
     }
 
-    return Application.updateStatus(applicationId, newStatus);
+    const result = await Application.updateStatus(applicationId, newStatus);
+
+    // 通知求职者：状态变更
+    try {
+      const label = STATUS_LABELS[newStatus] || newStatus;
+      const notif = await notificationService.create(
+        app.job_seeker_user_id,
+        'status_change',
+        '投递状态更新',
+        `职位「${job.title}」状态已更新为：${label}`,
+        app.id
+      );
+      const io = getIO();
+      if (io) io.to(`user:${app.job_seeker_user_id}`).emit('notification', {
+        id: notif.id, type: notif.type, title: notif.title, content: notif.content, createdAt: notif.created_at,
+      });
+    } catch (e) { console.error('通知发送失败:', e.message); }
+
+    return result;
   }
 }
 
