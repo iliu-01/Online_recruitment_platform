@@ -37,6 +37,7 @@ export const applicationsApi = {
 export const conversationsApi = {
   list: () => api.get('/conversations'),
   getMessages: (id, before) => api.get(`/conversations/${id}/messages`, { params: { before } }),
+  create: (data) => api.post('/conversations', data),
   unreadCount: () => api.get('/conversations/unread-count'),
 };
 
@@ -44,4 +45,13 @@ export const notificationsApi = {
   list: (page) => api.get('/notifications', { params: { page } }),
   markRead: (id) => api.put(`/notifications/${id}/read`),
   markAllRead: () => api.put('/notifications/read-all'),
+};
+
+export const adminApi = {
+  stats: () => api.get('/admin/stats'),
+  listUsers: (params) => api.get('/admin/users', { params }),
+  updateUser: (id, data) => api.put(`/admin/users/${id}`, data),
+  deleteUser: (id) => api.delete(`/admin/users/${id}`),
+  listJobs: (params) => api.get('/admin/jobs', { params }),
+  deleteJob: (id) => api.delete(`/admin/jobs/${id}`),
 };

@@ -23,7 +23,7 @@ const Job = {
     if (filters.experience) query = query.where('experience_level', filters.experience);
     return query.count('id as total').first();
   },
-  delete: (id, companyUserId) => db('jobs').where({ id, company_user_id: companyUserId }).update({ status: 'closed' }),
+  close: (id, companyUserId) => db('jobs').where({ id, company_user_id: companyUserId }).update({ status: 'closed', updated_at: db.fn.now() }).returning('*'),
 };
 
 module.exports = Job;

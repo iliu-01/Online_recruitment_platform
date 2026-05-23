@@ -70,6 +70,14 @@
         <el-button type="primary" text size="small" @click="addWork">+ 添加工作经历</el-button>
 
         <el-divider />
+
+        <el-divider>附件简历 (PDF)</el-divider>
+        <div style="margin-bottom:16px;display:flex;align-items:center;gap:12px">
+          <span style="font-size:13px;color:var(--gray-500)">最多3份 PDF 附件</span>
+          <el-button type="primary" text size="small" @click="$router.push('/seeker/resume/attachments')">管理附件 →</el-button>
+        </div>
+
+        <el-divider />
         <el-form-item>
           <el-button type="primary" size="large" @click="handleSave" :loading="saving">保存简历</el-button>
         </el-form-item>

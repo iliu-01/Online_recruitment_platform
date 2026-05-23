@@ -4,11 +4,10 @@
       <el-button text @click="$router.push('/seeker/messages')">
         <el-icon><ArrowLeft /></el-icon> 返回消息列表
       </el-button>
-      <span class="chat-title">{{ conversation?.partner_name || '对话' }}</span>
+      <span class="chat-title">对话</span>
     </div>
     <div class="chat-body">
-      <ChatWindow v-if="conversation" :conversationId="conversationId" :receiverId="conversation.partner_id" :messages="chatMessages" />
-      <el-empty v-else description="对话未找到" />
+      <ChatWindow :conversationId="conversationId" :receiverId="receiverId" :messages="chatMessages" />
     </div>
   </div>
 </template>
@@ -24,10 +23,12 @@ const chatStore = useChatStore();
 
 const conversationId = computed(() => Number(route.params.id));
 const conversation = computed(() => chatStore.conversations.find((c) => c.id === conversationId.value));
+const receiverId = computed(() => conversation.value?.company_user_id || 0);
 const chatMessages = computed(() => chatStore.messages[conversationId.value] || []);
 
 onMounted(async () => {
-  try { await chatStore.fetchMessages(conversationId.value); } catch (e) {}
+  await chatStore.fetchConversations();
+  await chatStore.fetchMessages(conversationId.value);
 });
 </script>
 

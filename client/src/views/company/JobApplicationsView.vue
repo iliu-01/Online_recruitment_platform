@@ -18,8 +18,9 @@
         <el-table-column label="投递时间" width="120">
           <template #default="{ row }">{{ formatDate(row.created_at) }}</template>
         </el-table-column>
-        <el-table-column label="操作" width="260">
+        <el-table-column label="操作" width="340">
           <template #default="{ row }">
+            <el-button type="primary" text size="small" @click="startChat(row)">发消息</el-button>
             <el-button type="primary" text size="small" @click="$router.push(`/company/applications/${row.id}`)">查看详情</el-button>
             <el-button v-if="row.status === 'delivered'" type="success" text size="small" @click="updateStatus(row, 'interviewing')">面试</el-button>
             <el-button v-if="row.status === 'interviewing'" type="warning" text size="small" @click="updateStatus(row, 'offered')">发Offer</el-button>
@@ -33,12 +34,15 @@
 
 <script setup>
 import { ref, onMounted } from 'vue';
-import { useRoute } from 'vue-router';
-import { jobsApi, applicationsApi } from '@/api/auth';
+import { useRoute, useRouter } from 'vue-router';
+import { jobsApi, applicationsApi, conversationsApi } from '@/api/auth';
+import { useAuthStore } from '@/stores/auth';
 import { ElMessage } from 'element-plus';
 import StatusTag from '@/components/common/StatusTag.vue';
 
 const route = useRoute();
+const router = useRouter();
+const authStore = useAuthStore();
 const jobId = ref(Number(route.params.id));
 const jobTitle = ref('');
 const applications = ref([]);
@@ -55,6 +59,20 @@ async function fetchData() {
     applications.value = apps.applications || [];
   } catch (e) { /* ignore */ }
   finally { loading.value = false; }
+}
+
+async function startChat(app) {
+  try {
+    console.log('app row data:', JSON.stringify(app, null, 2));
+    const { data } = await conversationsApi.create({
+      job_seeker_user_id: app.job_seeker_user_id,
+      company_user_id: authStore.userId,
+      job_id: jobId.value,
+    });
+    router.push(`/company/messages/${data.conversation.id}`);
+  } catch (err) {
+    ElMessage.error('发起对话失败');
+  }
 }
 
 async function updateStatus(app, newStatus) {

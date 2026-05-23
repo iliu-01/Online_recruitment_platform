@@ -13,7 +13,7 @@
       <el-form v-if="resume" :model="form" label-width="100px">
         <el-form-item label="使用简历"><span>{{ resume.full_name }}</span></el-form-item>
         <el-form-item label="求职信"><el-input v-model="form.cover_letter" type="textarea" :rows="4" placeholder="简短的求职信（选填）" /></el-form-item>
-        <el-form-item><el-button type="primary" @click="handleApply" :loading="applying">立即投递</el-button></el-form-item>
+        <el-form-item><el-button type="primary" @click="handleApply" :loading="applying" :disabled="hasApplied">{{ hasApplied ? '已投递' : '立即投递' }}</el-button></el-form-item>
       </el-form>
       <el-empty v-else description="请先创建简历"><el-button type="primary" @click="router.push('/seeker/resume')">创建简历</el-button></el-empty>
     </el-card>
@@ -28,15 +28,29 @@ import { ElMessage } from 'element-plus';
 
 const route = useRoute(); const router = useRouter();
 const job = ref(null); const resume = ref(null); const applying = ref(false);
+const hasApplied = ref(false);
 const form = reactive({ cover_letter: '' });
 
 onMounted(async () => {
-  try { const [{ data: j }, { data: r }] = await Promise.all([jobsApi.getById(route.params.id), resumeApi.get().catch(() => ({ data: { resume: null } }))]); job.value = j.job; resume.value = r.resume; } catch (e) {}
+  try {
+    const [{ data: j }, { data: r }] = await Promise.all([
+      jobsApi.getById(route.params.id),
+      resumeApi.get().catch(() => ({ data: { resume: null } })),
+    ]);
+    job.value = j.job; resume.value = r.resume;
+  } catch (e) {}
 });
 
 async function handleApply() {
   applying.value = true;
-  try { await applicationsApi.apply({ job_id: job.value.id, resume_id: resume.value.id, cover_letter: form.cover_letter, status: 'delivered' }); ElMessage.success('投递成功'); } catch (err) { ElMessage.error(err.response?.data?.error || '投递失败'); } finally { applying.value = false; }
+  try {
+    await applicationsApi.apply({ job_id: job.value.id, resume_id: resume.value.id, cover_letter: form.cover_letter, status: 'delivered' });
+    ElMessage.success('投递成功');
+    hasApplied.value = true;
+    setTimeout(() => router.push('/seeker/jobs'), 800);
+  } catch (err) {
+    ElMessage.error(err.response?.data?.error || '投递失败');
+  } finally { applying.value = false; }
 }
 </script>
 

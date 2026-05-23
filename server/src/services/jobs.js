@@ -31,7 +31,7 @@ class JobService {
   }
 
   async close(jobId, companyUserId) {
-    const [job] = await Job.delete(jobId, companyUserId);
+    const [job] = await Job.close(jobId, companyUserId);
     if (!job) throw Object.assign(new Error('职位不存在或无权操作'), { status: 404 });
     return job;
   }

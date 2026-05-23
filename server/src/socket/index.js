@@ -38,6 +38,7 @@ function initSocket(server) {
     console.log(`User ${userId} connected`);
 
     socket.on('send_message', async ({ conversationId, receiverId, content }) => {
+      console.log(`MSG from user ${userId} to ${receiverId} in conv ${conversationId}: ${content}`);
       try {
         const [msg] = await Message.create({
           conversation_id: conversationId,
@@ -48,11 +49,12 @@ function initSocket(server) {
         const payload = {
           id: msg.id,
           conversationId,
-          senderId: userId,
+          sender_id: userId,
           content,
-          createdAt: msg.created_at,
+          created_at: msg.created_at,
         };
         io.to(`user:${receiverId}`).emit('new_message', payload);
+        socket.emit('new_message', payload);
 
         const notif = await notificationService.create(
           receiverId,

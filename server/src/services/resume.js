@@ -11,8 +11,13 @@ class ResumeService {
 
   async upsertResume(userId, data) {
     const allowed = ['full_name', 'email', 'phone', 'city', 'education', 'work_experience', 'skills', 'self_intro'];
+    const jsonFields = ['education', 'work_experience', 'skills'];
     const filtered = {};
-    allowed.forEach((k) => { if (data[k] !== undefined) filtered[k] = data[k]; });
+    allowed.forEach((k) => {
+      if (data[k] !== undefined) {
+        filtered[k] = jsonFields.includes(k) ? JSON.stringify(data[k]) : data[k];
+      }
+    });
     const [resume] = await Resume.upsert(userId, filtered);
     const attachments = await Resume.getAttachments(resume.id);
     return { ...resume, attachments };
@@ -27,9 +32,15 @@ class ResumeService {
       throw Object.assign(new Error(`最多上传${config.upload.maxFiles}份附件`), { status: 400 });
     }
 
+    // 修复中文文件名编码
+    let fileName = file.originalname;
+    try {
+      fileName = Buffer.from(fileName, 'latin1').toString('utf8');
+    } catch (e) { /* keep original */ }
+
     const [attachment] = await Resume.addAttachment({
       resume_id: resume.id,
-      file_name: file.originalname,
+      file_name: fileName,
       file_path: file.path,
       file_size: file.size,
     });

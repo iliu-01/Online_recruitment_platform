@@ -21,6 +21,7 @@ export const useChatStore = defineStore('chat', {
       }
     },
     addMessage(msg) {
+      console.log('addMessage called:', msg);
       const list = this.messages[msg.conversationId] || [];
       list.push(msg);
       this.messages[msg.conversationId] = list;

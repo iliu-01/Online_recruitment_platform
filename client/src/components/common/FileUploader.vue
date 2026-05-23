@@ -15,8 +15,8 @@
     </el-upload>
     <div v-if="files.length" class="file-list">
       <div v-for="f in files" :key="f.id" class="file-item">
-        <span>{{ f.file_name }}</span>
-        <el-button type="danger" text :icon="Delete" @click="$emit('remove', f)" />
+        <span class="file-name" @click="openFile(f)" :title="'点击查看: ' + f.file_name">{{ f.file_name }}</span>
+        <el-button type="danger" text :icon="Delete" @click="$emit('remove', f)">删除</el-button>
       </div>
     </div>
   </div>
@@ -24,6 +24,8 @@
 
 <script setup>
 import { ElMessage } from 'element-plus';
+import { Delete } from '@element-plus/icons-vue';
+import api from '@/api/index';
 
 const props = defineProps({ files: { type: Array, default: () => [] }, maxFiles: { type: Number, default: 3 } });
 const emit = defineEmits(['upload', 'remove']);
@@ -34,9 +36,20 @@ function beforeUpload(file) {
   return true;
 }
 function customUpload({ file }) { emit('upload', file); }
+async function openFile(f) {
+  try {
+    const res = await api.get(`/resume/attachments/${f.id}`, { responseType: 'blob' });
+    const url = URL.createObjectURL(res.data);
+    window.open(url, '_blank');
+  } catch (e) {
+    ElMessage.error('无法打开文件');
+  }
+}
 </script>
 
 <style scoped>
 .file-list { margin-top: 12px; }
 .file-item { display: flex; align-items: center; justify-content: space-between; padding: 8px 12px; background: var(--gray-100); border-radius: var(--radius-sm); margin-bottom: 6px; font-size: 13px; }
+.file-name { cursor: pointer; color: var(--seeker-primary); text-decoration: underline; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin-right: 12px; }
+.file-name:hover { color: var(--seeker-primary-light); }
 </style>

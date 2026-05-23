@@ -20,8 +20,9 @@
         没有账号？<router-link to="/register">立即注册</router-link>
       </div>
       <div class="test-hint">
-        测试：seeker@test.com / 123456 (求职者)<br>
-        hr@test.com / 123456 (公司方)
+        管理员：admin@test.com / 123456<br>
+        求职者：seeker@test.com / 123456<br>
+        公司方：hr@test.com / 123456
       </div>
     </div>
   </div>

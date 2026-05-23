@@ -16,6 +16,11 @@ class ApplicationService {
     const job = await Job.findById(job_id);
     if (!job || job.status !== 'open') throw Object.assign(new Error('职位不存在或已关闭'), { status: 400 });
 
+    // 检查是否已投递
+    const existing = await Application.findBySeeker(jobSeekerUserId);
+    const alreadyApplied = existing.find((a) => a.job_id === parseInt(job_id));
+    if (alreadyApplied) throw Object.assign(new Error('您已向该职位投递过，请勿重复投递'), { status: 409 });
+
     const [app] = await Application.create({
       job_id,
       job_seeker_user_id: jobSeekerUserId,

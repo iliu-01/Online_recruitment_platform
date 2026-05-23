@@ -24,7 +24,8 @@
         <template #default="{ row }">
           <el-button type="primary" text size="small" @click="$router.push(`/company/jobs/${row.id}/edit`)">编辑</el-button>
           <el-button type="primary" text size="small" @click="$router.push(`/company/jobs/${row.id}/applications`)">查看申请</el-button>
-          <el-button type="danger" text size="small" @click="handleClose(row)" :disabled="row.status === 'closed'">关闭</el-button>
+          <el-button v-if="row.status === 'open'" type="danger" text size="small" @click="handleClose(row)">关闭</el-button>
+          <el-button v-else type="success" text size="small" @click="handleReopen(row)">重新打开</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -48,12 +49,28 @@ async function fetchJobs() {
   finally { loading.value = false; }
 }
 
+async function handleReopen(job) {
+  try {
+    await jobsApi.update(job.id, { status: 'open' });
+    ElMessage.success('职位已重新打开');
+    const idx = jobs.value.findIndex((j) => j.id === job.id);
+    if (idx !== -1) {
+      jobs.value.splice(idx, 1, { ...job, status: 'open' });
+    }
+  } catch (err) {
+    ElMessage.error(err.response?.data?.error || '操作失败');
+  }
+}
+
 async function handleClose(job) {
   try {
     await ElMessageBox.confirm(`确认关闭职位「${job.title}」吗？`, '提示', { type: 'warning' });
     await jobsApi.close(job.id);
     ElMessage.success('职位已关闭');
-    job.status = 'closed';
+    const idx = jobs.value.findIndex((j) => j.id === job.id);
+    if (idx !== -1) {
+      jobs.value.splice(idx, 1, { ...job, status: 'closed' });
+    }
   } catch (e) { /* cancelled or error */ }
 }
 

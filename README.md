@@ -1,6 +1,6 @@
 # 招聘平台
 
-在线招聘平台，面向**求职者**和**公司方（HR）**双角色。求职者可管理简历、搜索职位、投递并跟踪状态、与 HR 实时聊天。公司方可发布职位、查看投递简历、管理面试流程、与求职者沟通。
+在线招聘平台，面向**求职者**、**公司方（HR）**和**管理员**三种角色。求职者可管理简历、搜索职位、投递并跟踪状态、与 HR 实时聊天。公司方可发布职位、查看投递简历、管理面试流程、与求职者沟通。管理员可审查用户与职位数据。
 
 ## 技术栈
 
@@ -38,6 +38,12 @@
 - 与求职者实时聊天
 - 系统通知（新投递、新消息提醒）
 
+### 管理员
+- 专属登录入口（仅限种子数据创建）
+- 数据概览仪表盘（用户/职位/投递统计）
+- 用户管理（查看、删除、切换用户角色）
+- 职位审查（查看、删除违规职位）
+
 ## 项目结构
 
 ```
@@ -51,10 +57,11 @@ recruitment-platform/
 │       │   ├── seeker/             # 求职者专用组件
 │       │   └── company/            # 公司方专用组件
 │       ├── composables/            # 组合式函数 (useSocket)
-│       ├── layouts/                # 布局组件 (SeekerLayout, CompanyLayout)
+│       ├── layouts/                # 布局组件 (SeekerLayout, CompanyLayout, AdminLayout)
 │       ├── router/                 # Vue Router 路由配置与守卫
 │       ├── stores/                 # Pinia 状态管理 (auth, chat, notification, application)
 │       └── views/
+│           ├── admin/              # 管理员视图 (3 页面)
 │           ├── auth/               # 登录/注册页
 │           ├── seeker/             # 求职者视图 (8 页面)
 │           └── company/            # 公司方视图 (8 页面)
@@ -150,6 +157,7 @@ cd client && npm run dev
 
 | 角色 | 邮箱 | 密码 |
 |---|---|---|
+| 管理员 | admin@test.com | 123456 |
 | 求职者 | seeker@test.com | 123456 |
 | 公司方 | hr@test.com | 123456 |
 
@@ -202,6 +210,16 @@ cd client && npm run dev
 | GET | / | 通知列表（分页 ?page） | 是 |
 | PUT | /:id/read | 标记已读 | 是 |
 | PUT | /read-all | 全部已读 | 是 |
+
+### 管理 `/api/admin`
+| 方法 | 路径 | 说明 | 角色 |
+|---|---|---|---|
+| GET | /stats | 平台统计（用户/职位/投递总数） | 管理员 |
+| GET | /users | 用户列表（支持 ?role, ?search） | 管理员 |
+| PUT | /users/:id | 修改用户角色 | 管理员 |
+| DELETE | /users/:id | 删除用户 | 管理员 |
+| GET | /jobs | 职位列表（支持 ?status, ?search） | 管理员 |
+| DELETE | /jobs/:id | 删除职位 | 管理员 |
 
 ### WebSocket 事件
 

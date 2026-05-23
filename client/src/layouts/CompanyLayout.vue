@@ -41,17 +41,21 @@
 </template>
 
 <script setup>
-import { computed } from 'vue';
+import { computed, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useAuthStore } from '@/stores/auth';
 import { useChatStore } from '@/stores/chat';
+import { useSocket } from '@/composables/useSocket';
 import NotificationBell from '@/components/common/NotificationBell.vue';
 
 const route = useRoute();
 const router = useRouter();
 const authStore = useAuthStore();
 const chatStore = useChatStore();
+const { connect } = useSocket();
 const activeMenu = computed(() => route.path);
+
+onMounted(() => connect());
 
 function handleLogout() {
   authStore.logout();

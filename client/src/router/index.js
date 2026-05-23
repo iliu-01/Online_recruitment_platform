@@ -34,6 +34,16 @@ const routes = [
       { path: 'messages/:id', name: 'CompanyChat', component: () => import('@/views/company/ChatView.vue') },
     ],
   },
+  {
+    path: '/admin',
+    component: () => import('@/layouts/AdminLayout.vue'),
+    meta: { requiresAuth: true, role: 'admin' },
+    children: [
+      { path: 'dashboard', name: 'AdminDashboard', component: () => import('@/views/admin/DashboardView.vue') },
+      { path: 'users', name: 'AdminUsers', component: () => import('@/views/admin/UsersView.vue') },
+      { path: 'jobs', name: 'AdminJobs', component: () => import('@/views/admin/JobsView.vue') },
+    ],
+  },
 ];
 
 const router = createRouter({
@@ -42,7 +52,10 @@ const router = createRouter({
 });
 
 function roleToPath(r) {
-  return r === 'job_seeker' ? 'seeker' : 'company';
+  if (r === 'job_seeker') return 'seeker';
+  if (r === 'company') return 'company';
+  if (r === 'admin') return 'admin';
+  return 'company';
 }
 
 router.beforeEach((to, from, next) => {

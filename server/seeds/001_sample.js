@@ -36,6 +36,13 @@ exports.seed = async function (knex) {
     self_intro: '3年前端开发经验，热爱技术',
   });
 
+  // Create admin user
+  await knex('users').insert({
+    email: 'admin@test.com',
+    password_hash: hash,
+    role: 'admin',
+  });
+
   // Create company user
   const [company] = await knex('users').insert({
     email: 'hr@test.com',
@@ -56,6 +63,7 @@ exports.seed = async function (knex) {
   }).returning('*');
 
   console.log('Seed data created:');
+  console.log('  管理员: admin@test.com / 123456');
   console.log('  求职者: seeker@test.com / 123456');
   console.log('  公司方: hr@test.com / 123456');
 };

@@ -38,8 +38,11 @@ export function useSocket() {
   };
 
   const sendMessage = (conversationId, receiverId, content) => {
+    console.log('sendMessage called, socket connected:', socket?.connected, 'receiverId:', receiverId);
     if (socket?.connected) {
       socket.emit('send_message', { conversationId, receiverId, content });
+    } else {
+      console.error('Socket not connected!');
     }
   };
 

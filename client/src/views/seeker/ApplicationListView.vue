@@ -17,8 +17,9 @@
       <el-table-column label="投递时间" width="180">
         <template #default="{ row }">{{ formatDate(row.created_at) }}</template>
       </el-table-column>
-      <el-table-column label="操作" width="100">
+      <el-table-column label="操作" width="200">
         <template #default="{ row }">
+          <el-button type="primary" text size="small" @click="startChat(row)">发消息</el-button>
           <el-button type="primary" text size="small" @click="$router.push(`/seeker/jobs/${row.job_id}`)">查看职位</el-button>
         </template>
       </el-table-column>
@@ -28,8 +29,14 @@
 
 <script setup>
 import { ref, onMounted } from 'vue';
-import { applicationsApi } from '@/api/auth';
+import { useRouter } from 'vue-router';
+import { applicationsApi, conversationsApi } from '@/api/auth';
+import { ElMessage } from 'element-plus';
+import { useAuthStore } from '@/stores/auth';
 import StatusTag from '@/components/common/StatusTag.vue';
+
+const router = useRouter();
+const authStore = useAuthStore();
 
 const activeTab = ref('');
 const applications = ref([]);
@@ -46,6 +53,19 @@ async function fetchApplications() {
 }
 
 function formatDate(d) { return d ? new Date(d).toLocaleDateString('zh-CN') : ''; }
+
+async function startChat(app) {
+  try {
+    const { data } = await conversationsApi.create({
+      job_seeker_user_id: authStore.userId,
+      company_user_id: app.company_user_id,
+      job_id: app.job_id,
+    });
+    router.push(`/seeker/messages/${data.conversation.id}`);
+  } catch (err) {
+    ElMessage.error('发起对话失败');
+  }
+}
 
 onMounted(() => fetchApplications());
 </script>
