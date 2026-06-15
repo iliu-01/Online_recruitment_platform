@@ -58,7 +58,7 @@ function roleToPath(r) {
   return 'company';
 }
 
-router.beforeEach((to, from, next) => {
+router.beforeEach((to, from) => {
   const token = localStorage.getItem('token');
   let role = '';
   if (token) {
@@ -68,14 +68,19 @@ router.beforeEach((to, from, next) => {
     } catch { localStorage.removeItem('token'); }
   }
 
+  // 已登录用户访问登录/注册页 → 重定向到对应控制台
   if (to.path === '/login' || to.path === '/register') {
-    if (role) return next(`/${roleToPath(role)}/dashboard`);
-    return next();
+    if (role) return `/${roleToPath(role)}/dashboard`;
+    return true;
   }
 
-  if (!role) return next('/login');
-  if (to.meta.role && to.meta.role !== role) return next(`/${roleToPath(role)}/dashboard`);
-  next();
+  // 未登录用户访问需要认证的页面 → 重定向到登录页
+  if (!role) return '/login';
+
+  // 角色不匹配 → 重定向到正确的控制台
+  if (to.meta.role && to.meta.role !== role) return `/${roleToPath(role)}/dashboard`;
+
+  return true;
 });
 
 export default router;
