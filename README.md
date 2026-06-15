@@ -79,6 +79,136 @@ recruitment-platform/
 └── docs/superpowers/               # 设计文档与实施计划
 ```
 
+## 数据库表结构
+
+### ER 关系图
+
+```
+users ──1:1── online_resumes ──1:N── resume_attachments
+  │
+  ├──1:N── jobs ──1:N── applications
+  │           │
+  ├──1:N── conversations (as job_seeker) ──1:N── messages
+  │
+  ├──1:N── conversations (as company)
+  │
+  └──1:N── notifications
+```
+
+### 表定义
+
+#### users — 用户表
+
+| 列名 | 类型 | 约束 | 说明 |
+|---|---|---|---|
+| id | SERIAL | PK | 自增主键 |
+| email | VARCHAR(255) | NOT NULL, UNIQUE | 登录邮箱 |
+| password_hash | VARCHAR(255) | NOT NULL | bcrypt 加密后的密码 |
+| role | VARCHAR(20) | NOT NULL | 角色: `admin` / `job_seeker` / `company` |
+| created_at | TIMESTAMPTZ | NOT NULL | 创建时间 |
+| updated_at | TIMESTAMPTZ | NOT NULL | 更新时间 |
+
+#### online_resumes — 在线简历表
+
+| 列名 | 类型 | 约束 | 说明 |
+|---|---|---|---|
+| id | SERIAL | PK | 自增主键 |
+| user_id | INTEGER | NOT NULL, UNIQUE, FK → users.id | 所属用户 (一对一) |
+| full_name | VARCHAR(100) | | 姓名 |
+| email | VARCHAR(255) | | 联系邮箱 |
+| phone | VARCHAR(20) | | 联系电话 |
+| city | VARCHAR(50) | | 所在城市 |
+| education | JSONB | DEFAULT '[]' | 教育经历数组 |
+| work_experience | JSONB | DEFAULT '[]' | 工作经历数组 |
+| skills | JSONB | DEFAULT '[]' | 技能标签数组 |
+| self_intro | TEXT | | 自我评价 |
+| created_at | TIMESTAMPTZ | NOT NULL | 创建时间 |
+| updated_at | TIMESTAMPTZ | NOT NULL | 更新时间 |
+
+> education 结构: `[{ school, degree, major, start, end }]`  
+> work_experience 结构: `[{ company, position, start, end, description }]`  
+> skills 结构: `["Vue.js", "React", ...]`
+
+#### resume_attachments — 简历附件表
+
+| 列名 | 类型 | 约束 | 说明 |
+|---|---|---|---|
+| id | SERIAL | PK | 自增主键 |
+| resume_id | INTEGER | NOT NULL, FK → online_resumes.id (CASCADE) | 所属简历 |
+| file_name | VARCHAR(255) | NOT NULL | 原始文件名 |
+| file_path | VARCHAR(500) | NOT NULL | 服务器存储路径 |
+| file_size | INTEGER | NOT NULL | 文件大小 (字节) |
+| uploaded_at | TIMESTAMPTZ | NOT NULL | 上传时间 |
+
+> 每个用户最多 3 份附件，仅限 PDF, ≤10MB
+
+#### jobs — 职位表
+
+| 列名 | 类型 | 约束 | 说明 |
+|---|---|---|---|
+| id | SERIAL | PK | 自增主键 |
+| company_user_id | INTEGER | NOT NULL, FK → users.id (CASCADE) | 发布公司 |
+| title | VARCHAR(200) | NOT NULL | 职位名称 |
+| city | VARCHAR(50) | | 工作城市 |
+| salary_min | INTEGER | | 薪资下限 |
+| salary_max | INTEGER | | 薪资上限 |
+| experience_level | VARCHAR(50) | | 经验要求 |
+| education_level | VARCHAR(50) | | 学历要求 |
+| description | JSONB | DEFAULT '{}' | 职位详情 (含 detail 等字段) |
+| status | VARCHAR(20) | DEFAULT 'open' | 状态: `open` / `closed` |
+| created_at | TIMESTAMPTZ | NOT NULL | 创建时间 |
+| updated_at | TIMESTAMPTZ | NOT NULL | 更新时间 |
+
+#### applications — 投递表
+
+| 列名 | 类型 | 约束 | 说明 |
+|---|---|---|---|
+| id | SERIAL | PK | 自增主键 |
+| job_id | INTEGER | NOT NULL, FK → jobs.id (CASCADE) | 投递的职位 |
+| job_seeker_user_id | INTEGER | NOT NULL, FK → users.id (CASCADE) | 投递的求职者 |
+| resume_id | INTEGER | NOT NULL, FK → online_resumes.id (CASCADE) | 使用的简历 |
+| status | VARCHAR(20) | DEFAULT 'saved' | 投递状态 (见状态流转) |
+| cover_letter | TEXT | | 求职信 |
+| created_at | TIMESTAMPTZ | NOT NULL | 投递时间 |
+| updated_at | TIMESTAMPTZ | NOT NULL | 最后更新时间 |
+
+#### conversations — 对话表
+
+| 列名 | 类型 | 约束 | 说明 |
+|---|---|---|---|
+| id | SERIAL | PK | 自增主键 |
+| job_seeker_user_id | INTEGER | NOT NULL, FK → users.id (CASCADE) | 求职者 |
+| company_user_id | INTEGER | NOT NULL, FK → users.id (CASCADE) | 公司方 |
+| job_id | INTEGER | FK → jobs.id (SET NULL) | 关联职位 (可为空) |
+| created_at | TIMESTAMPTZ | NOT NULL | 创建时间 |
+| updated_at | TIMESTAMPTZ | NOT NULL | 更新时间 |
+
+> UNIQUE(job_seeker_user_id, company_user_id, job_id)
+
+#### messages — 消息表
+
+| 列名 | 类型 | 约束 | 说明 |
+|---|---|---|---|
+| id | SERIAL | PK | 自增主键 |
+| conversation_id | INTEGER | NOT NULL, FK → conversations.id (CASCADE) | 所属对话 |
+| sender_id | INTEGER | NOT NULL, FK → users.id (CASCADE) | 发送者 |
+| content | TEXT | NOT NULL | 消息内容 |
+| is_read | BOOLEAN | DEFAULT false | 是否已读 |
+| created_at | TIMESTAMPTZ | NOT NULL | 发送时间 |
+
+#### notifications — 通知表
+
+| 列名 | 类型 | 约束 | 说明 |
+|---|---|---|---|
+| id | SERIAL | PK | 自增主键 |
+| user_id | INTEGER | NOT NULL, FK → users.id (CASCADE) | 接收用户 |
+| type | VARCHAR(50) | NOT NULL | 通知类型 |
+| title | VARCHAR(200) | NOT NULL | 通知标题 |
+| content | TEXT | | 通知内容 |
+| related_id | INTEGER | | 关联实体 ID |
+| is_read | BOOLEAN | DEFAULT false | 是否已读 |
+| created_at | TIMESTAMPTZ | NOT NULL | 通知时间 |
+
 ## 环境要求
 
 - **Node.js** >= 18
